@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Colors!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #121212;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 10px;
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+
+        .color-display {
+            width: 250px;
+            height: 250px;
+            margin: 20px auto;
+            border-radius: 15px;
+            border: 5px solid #333;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .feedback {
+            text-align: center;
+            height: 50px;
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+
+        .stack-display {
+            background: #2a2a2a;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+
+        .stack-display h3 {
+            margin-bottom: 10px;
+        }
+
+        .color-item {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            background: #333;
+            border: 1px solid #444;
+        }
+
+        .performance-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .performance-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #2a2a2a;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Glowing button styles */
+        .color-btn {
+            --glow-color: #ffffff;
+            --glow-spread-color: rgba(255, 255, 255, 0.5);
+            --enhanced-glow-color: rgba(255, 255, 255, 0.8);
+            --btn-color: #000000;
+            border: 0.25em solid var(--glow-color);
+            padding: 1em 3em;
+            color: var(--glow-color);
+            font-size: 15px;
+            font-weight: bold;
+            background-color: var(--btn-color);
+            border-radius: 1em;
+            outline: none;
+            box-shadow: 0 0 1em 0.25em var(--glow-color),
+                        0 0 4em 1em var(--glow-spread-color),
+                        inset 0 0 0.75em 0.25em var(--glow-color);
+            text-shadow: 0 0 0.5em var(--glow-color);
+            position: relative;
+            transition: all 0.3s;
+            text-: black;
+        }
+
+        .color-btn::after {
+            pointer-events: none;
+            content: "";
+            position: absolute;
+            top: 120%;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background-color: var(--glow-spread-color);
+            filter: blur(2em);
+            opacity: 0.7;
+            transform: perspective(1.5em) rotateX(35deg) scale(1, 0.6);
+        }
+
+        .color-btn:hover {
+            color: var(--btn-color);
+            background-color: var(--glow-color);
+            box-shadow: 0 0 1em 0.25em var(--glow-color),
+                        0 0 4em 2em var(--glow-spread-color),
+                        inset 0 0 0.75em 0.25em var(--glow-color);
+        }
+
+        .color-btn:active {
+            box-shadow: 0 0 0.6em 0.25em var(--glow-color),
+                        0 0 2.5em 2em var(--glow-spread-color),
+                        inset 0 0 0.5em 0.25em var(--glow-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌈 Learn Colors! 🎨</h1>
+        </div>
+
+        <div class="stats">
+            <div>Score: <span id="score">0</span></div>
+            <div>Streak: <span id="streak">0</span></div>
+            <div>Total Attempts: <span id="attempts">0</span></div>
+        </div>
+
+        <div class="color-display" id="colorDisplay"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="options-grid" id="options"></div>
+
+        <div class="stack-display">
+            <h3>Recent Colors Stack:</h3>
+            <div id="stackDisplay"></div>
+        </div>
+
+        <div class="performance-list" id="performanceList"></div>
+    </div>
+
+    <script>
+        class Stack {
+            constructor(maxSize = 5) {
+                this.items = [];
+                this.maxSize = maxSize;
+            }
+            
+            push(element) {
+                if (this.items.length === this.maxSize) {
+                    this.items.pop();
+                }
+                this.items.unshift(element);
+            }
+            
+            getItems() {
+                return [...this.items];
+            }
+        }
+
+        const COLORS = [
+            { name: 'Red', hex: '#FF0000' },
+            { name: 'Blue', hex: '#0000FF' },
+            { name: 'Green', hex: '#008000' },
+            { name: 'Yellow', hex: '#FFFF00' },
+            { name: 'Purple', hex: '#800080' },
+            { name: 'Orange', hex: '#FFA500' },
+        ];
+
+        let colorPerformance = COLORS.map(color => ({
+            name: color.name,
+            attempts: 0,
+            correct: 0
+        }));
+
+        let score = 0, streak = 0, attempts = 0, currentColor = null;
+        let recentColors = new Stack(5);
+
+        function sortPerformance() {
+            return [...colorPerformance].sort((a, b) => {
+                const rateA = a.attempts ? a.correct / a.attempts : 0;
+                const rateB = b.attempts ? b.correct / b.attempts : 0;
+                return rateB - rateA;
+            });
+        }
+
+        function generateOptions(correctColor) {
+            let options = [correctColor];
+            let availableColors = COLORS.filter(c => c !== correctColor);
+            options.push(availableColors[0], availableColors[1], availableColors[2]);
+            options = options.sort(() => Math.random() - 0.5);
+
+            const optionsHTML = options.map(option => `
+                <button 
+                    class="color-btn" 
+                    onclick="checkAnswer('${option.name}')"
+                    style="--btn-color: ${option.hex}; --glow-color: ${option.hex};">
+                    ${option.name}
+                </button>
+            `).join('');
+
+            document.getElementById('options').innerHTML = optionsHTML;
+        }
+
+        function updateDisplay() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('attempts').textContent = attempts;
+
+            const stackItems = recentColors.getItems();
+            document.getElementById('stackDisplay').innerHTML = stackItems
+                .map(color => `<span class="color-item">${color.name}</span>`).join('');
+        }
+
+        function startGame() {
+            const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            currentColor = color;
+            document.getElementById('colorDisplay').style.backgroundColor = color.hex;
+            recentColors.push(color);
+
+            generateOptions(color);
+        }
+
+        function checkAnswer(selectedColor) {
+            attempts++;
+            const performance = colorPerformance.find(c => c.name === currentColor.name);
+            performance.attempts++;
+
+            const feedbackElement = document.getElementById('feedback');
+            if (selectedColor === currentColor.name) {
+                feedbackElement.textContent = "Correct!";
+                feedbackElement.style.color = "green";
+                score++;
+                streak++;
+                performance.correct++;
+            } else {
+                feedbackElement.textContent = "Wrong!";
+                feedbackElement.style.color = "red";
+                streak = 0;
+            }
+
+            updateDisplay();
+            setTimeout(startGame, 1000);
+        }
+
+        startGame();
+    </script>
+</body>
+</html>

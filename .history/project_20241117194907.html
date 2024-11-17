@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Colors!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #121212;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .header h1 {
+            color: #ffa500; /* Accent color */
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 10px;
+            background: #292929;
+            border-radius: 10px;
+        }
+
+        .color-display {
+            width: 250px;
+            height: 250px;
+            margin: 20px auto;
+            border-radius: 15px;
+            border: 5px solid #ffa500;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .color-btn {
+            padding: 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #292929;
+            color: #ffffff;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.05);
+            background: #444444;
+        }
+
+        .feedback {
+            text-align: center;
+            height: 50px;
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+
+        .stack-display {
+            background: #292929;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+
+        .stack-display h3 {
+            margin-bottom: 10px;
+            color: #ffa500;
+        }
+
+        .color-item {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            background: #444444;
+            color: #ffffff;
+            border: 1px solid #555555;
+        }
+
+        .performance-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .performance-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #292929;
+            color: #ffffff;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌈 Learn Colors! 🎨</h1>
+        </div>
+
+        <div class="stats">
+            <div>Score: <span id="score">0</span></div>
+            <div>Streak: <span id="streak">0</span></div>
+            <div>Total Attempts: <span id="attempts">0</span></div>
+        </div>
+
+        <div class="color-display" id="colorDisplay"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="options-grid" id="options"></div>
+
+        <div class="stack-display">
+            <h3>Recent Colors Stack:</h3>
+            <div id="stackDisplay"></div>
+        </div>
+
+        <div class="performance-list" id="performanceList"></div>
+    </div>
+
+    <script>
+        
+    </script>
+</body>
+</html>

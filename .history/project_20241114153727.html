@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Learning for Kids</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f0f0;
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        #video-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        #user-video {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        #color-display {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border-radius: 10px;
+            border: 3px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        #controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        #stats {
+            margin: 20px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="video-container">
+            <video id="user-video" autoplay playsinline></video>
+        </div>
+        <div id="color-display"></div>
+        <div id="controls">
+            <button onclick="startLearning()">Start Learning</button>
+            <button onclick="speak()">Repeat Color</button>
+        </div>
+        <div id="stats"></div>
+    </div>
+
+    <script>
+        // Data Structures
+        class ColorNode {
+            constructor(color, difficulty = 0) {
+                this.color = color;
+                this.difficulty = difficulty;
+                this.attempts = 0;
+                this.successes = 0;
+                this.next = null;
+            }
+        }
+
+        class AdaptiveLearningQueue {
+            constructor() {
+                this.head = null;
+                this.size = 0;
+            }
+
+            // Insert based on difficulty (Priority Queue implementation)
+            enqueue(colorNode) {
+                if (!this.head || this.head.difficulty > colorNode.difficulty) {
+                    colorNode.next = this.head;
+                    this.head = colorNode;
+                } else {
+                    let current = this.head;
+                    while (current.next && current.next.difficulty <= colorNode.difficulty) {
+                        current = current.next;
+                    }
+                    colorNode.next = current.next;
+                    current.next = colorNode;
+                }
+                this.size++;
+            }
+
+            dequeue() {
+                if (!this.head) return null;
+                const node = this.head;
+                this.head = this.head.next;
+                this.size--;
+                return node;
+            }
+
+            reorder() {
+                // Bubble sort based on difficulty
+                let swapped;
+                let current;
+                let last = null;
+
+                if (!this.head) return;
+
+                do {
+                    swapped = false;
+                    current = this.head;
+
+                    while (current.next != last) {
+                        if (current.difficulty > current.next.difficulty) {
+                            // Swap nodes
+                            let temp = current.color;
+                            current.color = current.next.color;
+                            current.next.color = temp;
+
+                            temp = current.difficulty;
+                            current.difficulty = current.next.difficulty;
+                            current.next.difficulty = temp;
+
+                            swapped = true;
+                        }
+                        current = current.next;
+                    }
+                    last = current;
+                } while (swapped);
+            }
+        }
+
+        // Initialize learning queue with colors
+        const learningQueue = new AdaptiveLearningQueue();
+        const colors = [
+            { name: 'Red', hex: '#FF0000' },
+            { name: 'Blue', hex: '#0000FF' },
+            { name: 'Green', hex: '#00FF00' },
+            { name: 'Yellow', hex: '#FFFF00' },
+            { name: 'Purple', hex: '#800080' },
+            { name: 'Orange', hex: '#FFA500' }
+        ];
+
+        // Initialize colors in queue
+        colors.forEach(color => {
+            learningQueue.enqueue(new ColorNode(color));
+        });
+
+        let currentColor = null;
+        let emotionDetectionInterval;
+
+        // Initialize webcam
+        async function initializeWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('user-video');
+                video.srcObject = stream;
+            } catch (error) {
+                console.error('Error accessing webcam:', error);
+            }
+        }
+
+        // Speech synthesis setup
+        const speechSynthesis = window.speechSynthesis;
+        function speak(text = currentColor?.color.name) {
+            if (!text) return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        }
+
+        // Simulated emotion detection (in real implementation, use ML model)
+        function detectEmotion() {
+            // Simulate emotion detection
+            return Math.random() > 0.7 ? 'confused' : 'happy';
+        }
+
+        // Learning algorithm
+        function updateDifficulty(emotion) {
+            if (!currentColor) return;
+
+            currentColor.attempts++;
+            if (emotion === 'happy') {
+                currentColor.successes++;
+                currentColor.difficulty = Math.max(0, currentColor.difficulty - 0.2);
+            } else {
+                currentColor.difficulty += 0.3;
+            }
+
+            // Update success rate
+            const successRate = (currentColor.successes / currentColor.attempts) * 100;
+            updateStats(currentColor.color.name, successRate, currentColor.difficulty);
+        }
+
+        function updateStats(colorName, successRate, difficulty) {
+            const stats = document.getElementById('stats');
+            stats.innerHTML = `
+                <h3>Current Color: ${colorName}</h3>
+                <p>Success Rate: ${successRate.toFixed(1)}%</p>
+                <p>Difficulty Level: ${difficulty.toFixed(2)}</p>
+            `;
+        }
+
+        function showNextColor() {
+            currentColor = learningQueue.dequeue();
+            if (currentColor) {
+                const colorDisplay = document.getElementById('color-display');
+                colorDisplay.style.backgroundColor = currentColor.color.hex;
+                colorDisplay.textContent = currentColor.color.name;
+                speak();
+                learningQueue.enqueue(currentColor);
+                learningQueue.reorder();
+            }
+        }
+
+        function startLearning() {
+            if (emotionDetectionInterval) {
+                clearInterval(emotionDetectionInterval);
+            }
+
+            initializeWebcam();
+            showNextColor();
+
+            // Start emotion detection loop
+            emotionDetectionInterval = setInterval(() => {
+                const emotion = detectEmotion();
+                updateDifficulty(emotion);
+            }, 3000);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            const startButton = document.querySelector('button');
+            startButton.addEventListener('click', startLearning);
+        });
+    </script>
+</body>
+</html>

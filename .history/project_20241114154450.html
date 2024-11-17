@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun Color Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 10px;
+            font-size: 1.2em;
+        }
+
+        .color-display {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border-radius: 20px;
+            border: 8px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .color-option {
+            padding: 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f8f8;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .color-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .feedback {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.5em;
+            min-height: 40px;
+            color: #333;
+        }
+
+        .progress-container {
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .color-progress {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 15px;
+            background: #ddd;
+            margin: 0 10px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+
+        .stats-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌈 Fun Color Learning! 🎨</h1>
+        </div>
+        
+        <div class="score-display">
+            <span>Score: <span id="score">0</span></span>
+            <span>Level: <span id="level">1</span></span>
+        </div>
+
+        <div class="color-display" id="colorDisplay"></div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <div class="options-container" id="options"></div>
+        
+        <button class="stats-button" onclick="toggleStats()">Show Learning Progress</button>
+        
+        <div class="progress-container" id="progressContainer" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Advanced data structure for color learning management
+        class ColorNode {
+            constructor(name, hex) {
+                this.name = name;
+                this.hex = hex;
+                this.attempts = 0;
+                this.correct = 0;
+                this.difficulty = 1;
+                this.lastSeen = Date.now();
+                this.consecutiveCorrect = 0;
+            }
+
+            updateDifficulty(isCorrect) {
+                this.attempts++;
+                if (isCorrect) {
+                    this.correct++;
+                    this.consecutiveCorrect++;
+                    this.difficulty = Math.max(0.5, this.difficulty - 0.1);
+                } else {
+                    this.consecutiveCorrect = 0;
+                    this.difficulty = Math.min(2, this.difficulty + 0.2);
+                }
+            }
+
+            getSuccessRate() {
+                return this.attempts === 0 ? 0 : (this.correct / this.attempts) * 100;
+            }
+        }
+
+        class AdaptiveLearningSystem {
+            constructor() {
+                this.colors = new Map();
+                this.score = 0;
+                this.level = 1;
+                this.initializeColors();
+            }
+
+            initializeColors() {
+                const initialColors = [
+                    { name: 'Red', hex: '#FF0000' },
+                    { name: 'Blue', hex: '#0000FF' },
+                    { name: 'Green', hex: '#00FF00' },
+                    { name: 'Yellow', hex: '#FFFF00' },
+                    { name: 'Purple', hex: '#800080' },
+                    { name: 'Orange', hex: '#FFA500' },
+                    { name: 'Pink', hex: '#FFC0CB' },
+                    { name: 'Brown', hex: '#8B4513' }
+                ];
+
+                initialColors.forEach(color => {
+                    this.colors.set(color.name, new ColorNode(color.name, color.hex));
+                });
+            }
+
+            // Intelligent color selection based on multiple factors
+            selectNextColor() {
+                const now = Date.now();
+                let colorScores = Array.from(this.colors.values()).map(color => {
+                    // Calculate a weighted score for each color
+                    const timeWeight = Math.min(1, (now - color.lastSeen) / 10000);
+                    const difficultyWeight = color.difficulty * 2;
+                    const successWeight = 1 - (color.getSuccessRate() / 100);
+                    const randomFactor = Math.random() * 0.2;
+
+                    return {
+                        color,
+                        score: timeWeight + difficultyWeight + successWeight + randomFactor
+                    };
+                });
+
+                // Sort by score and select the highest scoring color
+                colorScores.sort((a, b) => b.score - a.score);
+                const selectedColor = colorScores[0].color;
+                selectedColor.lastSeen = now;
+                return selectedColor;
+            }
+
+            // Generate options for the current question
+            generateOptions(correctColor) {
+                let options = [correctColor];
+                let availableColors = Array.from(this.colors.values())
+                    .filter(c => c !== correctColor)
+                    .sort(() => Math.random() - 0.5);
+
+                // Add 3 more options
+                for (let i = 0; i < 3 && i < availableColors.length; i++) {
+                    options.push(availableColors[i]);
+                }
+
+                return options.sort(() => Math.random() - 0.5);
+            }
+
+            // Update game state based on answer
+            processAnswer(color, isCorrect) {
+                color.updateDifficulty(isCorrect);
+                if (isCorrect) {
+                    this.score += Math.ceil(10 * color.difficulty);
+                    if (this.score >= this.level * 100) {
+                        this.level++;
+                        return true; // Level up
+                    }
+                }
+                return false; // No level up
+            }
+        }
+
+        // Game instance
+        const game = new AdaptiveLearningSystem();
+        let currentColor = null;
+
+        // UI Functions
+        function updateDisplay() {
+            document.getElementById('score').textContent = game.score;
+            document.getElementById('level').textContent = game.level;
+        }
+
+        function showFeedback(isCorrect) {
+            const feedback = document.getElementById('feedback');
+            if (isCorrect) {
+                feedback.innerHTML = '🎉 Correct! Well done! 🌟';
+                feedback.style.color = '#4CAF50';
+            } else {
+                feedback.innerHTML = `Try again! That was ${currentColor.name} 💪`;
+                feedback.style.color = '#FF5722';
+            }
+        }
+
+        function handleAnswer(selectedColor) {
+            const isCorrect = selectedColor === currentColor.name;
+            const levelUp = game.processAnswer(game.colors.get(currentColor.name), isCorrect);
+            showFeedback(isCorrect);
+            updateDisplay();
+
+            if (levelUp) {
+                setTimeout(() => {
+                    alert('🎉 Congratulations! Level Up! 🎉');
+                }, 500);
+            }
+
+            setTimeout(nextQuestion, isCorrect ? 1500 : 2500);
+        }
+
+        function nextQuestion() {
+            document.getElementById('feedback').textContent = '';
+            currentColor = game.selectNextColor();
+            const colorDisplay = document.getElementById('colorDisplay');
+            colorDisplay.style.backgroundColor = currentColor.hex;
+
+            const options = game.generateOptions(currentColor);
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'color-option';
+                button.textContent = option.name;
+                button.onclick = () => handleAnswer(option.name);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function toggleStats() {
+            const container = document.getElementById('progressContainer');
+            const isHidden = container.style.display === 'none';
+            container.style.display = isHidden ? 'block' : 'none';
+
+            if (isHidden) {
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            const container = document.getElementById('progressContainer');
+            container.innerHTML = '<h3>Learning Progress:</h3>';
+
+            Array.from(game.colors.entries()).forEach(([name, color]) => {
+                const successRate = color.getSuccessRate();
+                const div = document.createElement('div');
+                div.className = 'color-progress';
+                div.innerHTML = `
+                    <span>${name}</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${successRate}%"></div>
+                    </div>
+                    <span>${successRate.toFixed(1)}%</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Start the game
+        nextQuestion();
+    </script>
+</body>
+</html>
